@@ -1,11 +1,11 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, RequestHandler } from "express";
 
 type HTTPMethod = "get" | "post" | "put" | "delete" | "patch";
 
 export interface RouteDefinition {
   method: HTTPMethod;
   path: string;
-  handler: (req: Request, res: Response) => Promise<void> | void;
+  handler: RequestHandler | RequestHandler[];
 }
 
 export abstract class Controller {
@@ -14,16 +14,19 @@ export abstract class Controller {
 
   constructor() {
     this.router = Router();
-    this.initializeRoutes(); 
-    this.registerRoutes(); 
+    this.initializeRoutes();
+    this.registerRoutes();
   }
-
 
   protected abstract initializeRoutes(): void;
 
   private registerRoutes() {
     for (const route of this.routes) {
-      this.router[route.method](route.path, route.handler.bind(this));
+      if (Array.isArray(route.handler)) {
+        this.router[route.method](route.path, ...route.handler);
+      } else {
+        this.router[route.method](route.path, route.handler);
+      }
     }
   }
 
