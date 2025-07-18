@@ -10,8 +10,10 @@ export class Routes {
   }
 
   private initializeRoutes() {
+    const PREFIX: string = "/api";
+
     const indexController = new IndexController();
-    this.router.use("/", indexController.getRouter());
+    this.router.use(`${PREFIX}/`, indexController.getRouter());
   }
 
   getRoutes() {
