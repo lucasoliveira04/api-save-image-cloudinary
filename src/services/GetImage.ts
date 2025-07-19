@@ -1,35 +1,28 @@
 import { v2 } from "cloudinary";
 import { CloudinaryConfig } from "../config/Cloudinary";
 
-export class GetPublicIdsService {
+export class GetImageByIdService {
   private cloudinaryConfig: CloudinaryConfig;
 
   constructor(cloudinaryConfig: CloudinaryConfig) {
     this.cloudinaryConfig = cloudinaryConfig;
   }
 
-  async getPublicIds(): Promise<string[]> {
+  async getImageById(publicId: string): Promise<string> {
     if (!this.cloudinaryConfig.initialize()) {
       throw new Error("Cloudinary is not configured");
     }
 
-    const resourcesRetrivel = await v2.api.resources({
+    const resource = await v2.api.resource(publicId, {
       type: "upload",
       resource_type: "image",
       url: true,
-      max_results: 30,
     });
 
-    if (!resourcesRetrivel) {
-      throw new Error("Failed to retrieve images");
+    if (!resource || !resource.secure_url) {
+      throw new Error("Image not found");
     }
 
-    const publicIds = resourcesRetrivel.resources.map(
-      (resource: { public_id: string }) => {
-        return resource.public_id;
-      }
-    );
-
-    return Promise.resolve(publicIds);
+    return resource.secure_url;
   }
 }
